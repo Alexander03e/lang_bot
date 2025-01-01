@@ -1,0 +1,58 @@
+version: '3.9'
+
+services:
+  db:
+    image: postgres:alpine
+    restart: always
+    container_name: eng_bot_db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: eng_bot
+    networks:
+      - eng_bot
+
+  backend:
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "8000:8000"
+    environment:
+      NODE_ENV: production
+      PORT: 8000
+    volumes:
+      - ./backend:/usr/src/app
+    networks:
+      - eng_bot
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - eng_bot
+
+  bot:
+    depends_on:
+      - redis
+      - backend
+    build:
+      context: ./bot/
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production
+    ports:
+      - "5100:80"
+    volumes:
+      - ./bot:/usr/src/app
+    networks:
+      - eng_bot
+
+networks:
+    eng_bot:
+        driver: bridge

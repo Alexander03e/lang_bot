@@ -1,0 +1,33 @@
+{
+  "name": "bot",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon 'src/**/*.ts' --exec 'ts-node src/bootstrap/index.ts' --ext ts,js,json",
+    "build": "webpack --config webpack.config.js --mode production",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.7.9",
+    "dotenv": "^16.4.7",
+    "module-alias": "^2.2.3",
+    "redis": "^4.7.0",
+    "telegraf": "^4.16.3",
+    "tsconfig-paths": "^4.2.0"
+  },
+  "devDependencies": {
+    "@telegraf/types": "^7.1.0",
+    "nodemon": "^3.1.9",
+    "ts-loader": "^9.5.1",
+    "ts-node": "^10.9.2",
+    "webpack": "^5.97.1",
+    "webpack-cli": "^6.0.1"
+  },
+  "_moduleAliases": {
+    "@app": "./src"
+  }
+}
