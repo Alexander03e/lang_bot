@@ -1,5 +1,4 @@
-export interface StateService {
-    getState: (key: string | number) => Promise<unknown>
-    setState: (key: string | number, payload: unknown) => Promise<void>
-
+export interface StateService<T = unknown> {
+    getState: (key: string | number) => Promise<T>;
+    setState: (key: string | number, payload: Partial<T>) => Promise<void>;
 }

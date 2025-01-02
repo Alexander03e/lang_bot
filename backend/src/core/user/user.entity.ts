@@ -13,6 +13,9 @@ export class UserEntity extends AbstractEntity<UserEntity> {
     @Column()
     username: string;
 
+    @Column({ default: null, nullable: true })
+    first_name: string | null;
+
     @OneToMany(() => LanguageEntity, language => language.user)
     language: LanguageEntity[];
 }
