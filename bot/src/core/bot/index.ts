@@ -1,5 +1,5 @@
 import { BotIntance } from './bot.interface';
-import { Context, Telegraf } from 'telegraf';
+import { Telegraf } from 'telegraf';
 import { CommandController } from '@app/core/commands/commands.controller';
 import { IController } from '@app/shared/types/controller.interface';
 import { StateService } from '@app/shared/types/state.interface';
@@ -20,7 +20,7 @@ export class Bot implements BotIntance {
     private controllers: IController[] = [];
 
     constructor(
-        private readonly token: string,
+        readonly token: string,
         stateService: StateService<IState>,
         apiService: ApiService,
         messageService: MessageService,
@@ -29,11 +29,17 @@ export class Bot implements BotIntance {
         this.apiService = apiService;
         this.messageService = messageService;
         this.botInstance = new Telegraf(token);
+
+        const screenController = new ScreenController(this);
+        const commandController = new CommandController(this, stateService, screenController);
+        const messageController = new MessageController(this);
+        const middlewareController = new BotMiddleware(this);
+
         this.controllers = [
-            new CommandController(this),
-            new ScreenController(this),
-            new BotMiddleware(this),
-            new MessageController(this),
+            commandController,
+            screenController,
+            middlewareController,
+            messageController,
         ];
     }
 

@@ -2,22 +2,46 @@ import { IController } from '@app/shared/types/controller.interface';
 import { Bot } from '@app/core/bot';
 import { DATA } from '@app/shared/enums/api.enum';
 import { COMMANDS } from '@app/shared/consts/commands';
-import { EScreen } from '@app/shared/enums/screens.enum';
+import { EBotLang, EScreen } from '@app/shared/enums/screens.enum';
 import { Context } from 'telegraf';
-import { StartCommandMenu } from '@app/shared/consts/common';
+import { StateService } from '@app/shared/types/state.interface';
+import { IState } from '@app/core/redis/redis.interface';
+import { ScreenController } from '@app/core/screen/screen.controller';
 
 export class CommandController implements IController {
-    constructor(private readonly bot: Bot) {}
+    constructor(
+        private readonly bot: Bot,
+        private readonly stateService: StateService<IState>,
+        private readonly screenController: ScreenController,
+    ) {}
 
     onStart() {
         this.bot.botInstance.start(async ctx => {
-            await this.bot.apiService.createUser({
-                tgId: +ctx.from.id,
-                username: ctx.from?.username || DATA.HIDDEN,
-                first_name: ctx.from.first_name || null,
+            const tgId = ctx?.chat?.id;
+
+            if (!tgId) return;
+
+            const findUser = await this.bot.apiService.findByTgId(tgId);
+
+            if (!findUser) {
+                await this.bot.apiService.createUser({
+                    tgId: +ctx.from.id,
+                    username: ctx.from?.username || DATA.HIDDEN,
+                    first_name: ctx.from.first_name || null,
+                });
+            }
+
+            const user = await this.stateService.setState(tgId, {
+                tgId,
+                lang: ctx.from.language_code === 'ru' ? EBotLang.RU : EBotLang.EN,
             });
 
-            await this.bot.sendMessage(ctx, StartCommandMenu.message, StartCommandMenu.keyboard);
+            if (user?.language) {
+                await this.screenController.open(ctx, EScreen.MAIN_MENU);
+
+                return;
+            }
+            await this.screenController.open(ctx, EScreen.START_MENU);
         });
     }
 
@@ -26,9 +50,8 @@ export class CommandController implements IController {
 
         Object.entries(COMMANDS).map(([screen, command]) => {
             this.bot.botInstance.command(command, async (ctx: Context, next) => {
-                await this.bot.stateService.setState(ctx.chat?.id!, {
-                    openScreen: screen as EScreen,
-                });
+                await this.screenController.open(ctx, screen as EScreen);
+
                 await next();
             });
         });

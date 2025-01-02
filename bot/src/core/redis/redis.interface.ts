@@ -1,5 +1,5 @@
 import { ELangueage } from '@app/shared/enums/entities.enum';
-import { EScreen } from '@app/shared/enums/screens.enum';
+import { EBotLang, EScreen, EScreenAction } from '@app/shared/enums/screens.enum';
 
 export interface IState {
     tgId: number | null;
@@ -7,9 +7,11 @@ export interface IState {
     prevScreen: EScreen | null;
     currentScreen: EScreen | null;
     openScreen: EScreen | null;
+    screenAction: EScreenAction | null;
     lastMessage: {
         id: number;
         message: string;
         isInlineKeyboard?: boolean;
     } | null;
+    lang: EBotLang | null;
 }

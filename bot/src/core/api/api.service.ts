@@ -20,7 +20,7 @@ export class ApiService {
         return this.baseInstance;
     }
 
-    async findAll(entity: ENTITIES) {
+    async findAll<T = unknown>(entity: ENTITIES): Promise<T> {
         return (await this.httpInstance.get(entity)).data;
     }
 
@@ -30,5 +30,9 @@ export class ApiService {
 
     async createUser(dto: CreateUserDto) {
         return (await this.httpInstance.post(ENTITIES.USER, dto)).data;
+    }
+
+    async findByTgId(tgId: number) {
+        return await this.httpInstance.get(`${ENTITIES.USER}/${tgId}`);
     }
 }

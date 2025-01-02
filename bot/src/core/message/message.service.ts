@@ -2,6 +2,10 @@ import { Context, Markup } from 'telegraf';
 import { emptyKeyboard } from '@app/shared/consts/common';
 import { StateService } from '@app/shared/types/state.interface';
 import { IState } from '@app/core/redis/redis.interface';
+import { Message, Update } from '@telegraf/types';
+
+import Edited = Update.Edited;
+import TextMessage = Message.TextMessage;
 
 export class MessageService {
     constructor(private readonly redisService: StateService<IState>) {}
@@ -14,9 +18,23 @@ export class MessageService {
 
         if (!lastMessage) return;
 
-        await ctx.telegram.editMessageText(tgId, Number(lastMessage.id), '', message, {
-            parse_mode: 'HTML',
-            reply_markup: keyboard ? keyboard.reply_markup : emptyKeyboard.reply_markup,
+        const editedMessage = (await ctx.telegram.editMessageText(
+            tgId,
+            Number(lastMessage.id),
+            '',
+            message,
+            {
+                parse_mode: 'HTML',
+                reply_markup: keyboard ? keyboard.reply_markup : emptyKeyboard.reply_markup,
+            },
+        )) as Edited & TextMessage;
+
+        await this.redisService.setState(tgId, {
+            lastMessage: {
+                message: editedMessage.text,
+                id: editedMessage.message_id,
+                isInlineKeyboard: !!keyboard,
+            },
         });
     }
 
