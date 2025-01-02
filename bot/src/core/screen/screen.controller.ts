@@ -36,21 +36,22 @@ export class ScreenController implements IController {
     launch() {
         this.bot.botInstance.use(async (ctx: Context, next) => {
             const tgId = ctx.chat?.id;
-            console.log(tgId);
             if (!tgId) return;
 
-            console.log('te');
             const state = await this.bot.stateService.getState(tgId);
             if (state.openScreen) {
                 await this.bot.stateService.setState(tgId, {
-                    prevScreen: state.currentScreen,
+                    prevScreen:
+                        state.openScreen === state.currentScreen
+                            ? state.prevScreen
+                            : state.currentScreen,
                     currentScreen: state.openScreen,
                     openScreen: null,
                 });
 
                 await this.open(ctx, state.openScreen);
             }
-            next();
+            await next();
         });
     }
 }

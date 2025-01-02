@@ -10,5 +10,6 @@ export interface IState {
     lastMessage: {
         id: number;
         message: string;
+        isInlineKeyboard?: boolean;
     } | null;
 }

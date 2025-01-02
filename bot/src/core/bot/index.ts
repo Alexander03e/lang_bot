@@ -12,9 +12,11 @@ import { IState } from '@app/core/redis/redis.interface';
 
 export class Bot implements BotIntance {
     readonly botInstance: Telegraf<any>;
+
     readonly stateService: StateService<IState>;
     readonly messageService: MessageService;
     readonly apiService: ApiService;
+
     private controllers: IController[] = [];
 
     constructor(
@@ -35,13 +37,13 @@ export class Bot implements BotIntance {
         ];
     }
 
-    async editMessage(ctx: Context, message: string) {}
+    async editMessage(...props: Parameters<typeof this.messageService.editMessage>) {
+        await this.messageService.editMessage(...props);
+    }
 
     async sendMessage(...props: Parameters<typeof this.messageService.sendMessage>) {
         await this.messageService.sendMessage(...props);
     }
-
-    async clearKeyboard(ctx: Context) {}
 
     async launch() {
         this.controllers.forEach(controller => controller.launch());

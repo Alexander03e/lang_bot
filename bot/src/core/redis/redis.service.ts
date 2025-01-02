@@ -43,6 +43,8 @@ export class RedisService implements StateService<IState> {
         const merged = Object.assign({ ...prevState }, payload);
 
         await this.client.set(this.getKey(key), JSON.stringify({ ...merged }));
+
+        return merged;
     }
 
     async getState(key: number | string) {
