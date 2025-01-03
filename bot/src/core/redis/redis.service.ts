@@ -1,7 +1,6 @@
 import { StateService } from '@app/shared/types/state.interface';
 import { createClient, RedisClientType } from 'redis';
 import { IState } from '@app/core/redis/redis.interface';
-import { EBotLang } from '@app/shared/enums/screens.enum';
 
 const initState: IState = {
     lastMessage: null,
@@ -12,6 +11,18 @@ const initState: IState = {
     screenAction: null,
     tgId: null,
     lang: null,
+    sceneData: null,
+
+    words: {
+        total: 0,
+        currentPage: 1,
+        displayMode: 'BUTTONS',
+    },
+
+    pagination: {
+        currentPage: 1,
+        total: 0,
+    },
 };
 
 export class RedisService implements StateService<IState> {

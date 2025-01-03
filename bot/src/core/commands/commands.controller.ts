@@ -2,7 +2,7 @@ import { IController } from '@app/shared/types/controller.interface';
 import { Bot } from '@app/core/bot';
 import { DATA } from '@app/shared/enums/api.enum';
 import { COMMANDS } from '@app/shared/consts/commands';
-import { EBotLang, EScreen } from '@app/shared/enums/screens.enum';
+import { EBotLang, EScreen, EScreenAction } from '@app/shared/enums/screens.enum';
 import { Context } from 'telegraf';
 import { StateService } from '@app/shared/types/state.interface';
 import { IState } from '@app/core/redis/redis.interface';
@@ -50,7 +50,8 @@ export class CommandController implements IController {
 
         Object.entries(COMMANDS).map(([screen, command]) => {
             this.bot.botInstance.command(command, async (ctx: Context, next) => {
-                await this.screenController.open(ctx, screen as EScreen);
+                //@ts-ignore
+                await this.screenController.open(ctx, screen as EScreen, null, EScreenAction.SEND);
 
                 await next();
             });

@@ -1,3 +1,6 @@
+import { LANGUAGE } from '@app/shared/consts/language';
+import { ELangueage } from '@app/shared/enums/entities.enum';
+
 export const TRANSLATION = {
     english: {
         ru: '🇦🇺Английский',
@@ -16,13 +19,13 @@ export const TRANSLATION = {
         en: 'Welcome to the bot \n',
     },
     backButton: {
-        ru: '◀️Назад',
-        en: '◀️Go back',
+        ru: '←  Назад',
+        en: '←  Go back',
     },
 
     mainMenu: (words: number, lang: string) => ({
-        ru: `Выберите действие \n\nВыбранный язык: ${lang} \n\nВыученных слов: ${words}`,
-        en: `Select action \n\nSelected language: ${lang} \n\nLearned words: ${words}`,
+        ru: `Выберите действие \n\nВыбранный язык: ${lang} \n\nДобавленных слов: ${words}`,
+        en: `Select action \n\nSelected language: ${lang} \n\nAdded words: ${words}`,
     }),
 
     words: {
@@ -65,7 +68,45 @@ export const TRANSLATION = {
         en: '🏳️‍🌈 Change language',
     },
 
+    page: {
+        ru: 'страница',
+        en: 'page',
+    },
+
+    next: {
+        ru: 'Вперёд',
+        en: 'Next',
+    },
+
+    prev: {
+        ru: 'Назад',
+        en: 'Back',
+    },
+
     // setLang: {
     //     ru: "Выбран язык"
     // }
+};
+
+export const getLangTranslation = {
+    [ELangueage.EN]: {
+        index: {
+            ru: 'Английский',
+            en: 'English',
+        },
+        write: {
+            ru: 'английском',
+            en: 'english',
+        },
+    },
+    [ELangueage.GE]: {
+        index: {
+            ru: 'Немецкий',
+            en: 'German',
+        },
+        write: {
+            ru: 'немецком',
+            en: 'german',
+        },
+    },
 };

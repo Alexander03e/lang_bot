@@ -19,6 +19,14 @@ export class WordService {
         @InjectRepository(LanguageEntity) private languageRepository: Repository<LanguageEntity>,
     ) {}
 
+    async delete(id: number) {
+        return await this.wordRepository.delete({ id });
+    }
+
+    async findById(id: number) {
+        return await this.wordRepository.findOne({ where: { id } });
+    }
+
     async createByUser(data: CreateByUserLanguageDto) {
         const { tgId, languageSlug, ...createdWord } = data;
 
@@ -71,7 +79,7 @@ export class WordService {
                     slug: query.languageSlug,
                 },
             });
-            
+
             queryBuilder.andWhere('words.languageId = :id', {
                 id: language.id,
             });
@@ -92,13 +100,6 @@ export class WordService {
             words,
             total,
         };
-    }
-
-    async findByLanguage(language: string) {
-        await this.wordRepository.find({
-            // where: { language:  },
-            // relations: ['languageSlug'],
-        });
     }
 
     async update(id: number, data: EditWordDto) {

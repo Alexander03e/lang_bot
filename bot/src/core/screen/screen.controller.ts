@@ -8,9 +8,10 @@ import { generateKeyboard } from '@app/core/screen/utils/generateKeyboard';
 import { LANG_LABELS } from '@app/shared/consts/language';
 import { ELangueage } from '@app/shared/enums/entities.enum';
 import { SCREEN_TEXTS } from '@app/shared/consts/screens';
-import { EBotActions } from '@app/shared/enums/actions.enum';
-import { getBackButton, getMenuButtons } from '@app/shared/keyboards';
+import { EBaseActions, EBotActions } from '@app/shared/enums/actions.enum';
+import { getBackButton, getMenuButtons, getPaginationButton } from '@app/shared/keyboards';
 import { TRANSLATION } from '@app/shared/translation';
+import { LIMIT } from '@app/shared/consts/common';
 
 export class ScreenController implements IController {
     constructor(private readonly bot: Bot) {}
@@ -50,6 +51,9 @@ export class ScreenController implements IController {
         const userLang = user?.lang || EBotLang.RU;
 
         const botAction = (ctx: Context, message: string, keyboard?: Markup.Markup<any>) => {
+            if (action === EScreenAction.SEND) {
+                return this.bot.sendMessage(ctx, message, keyboard);
+            }
             if (action === EScreenAction.EDIT || ctx.callbackQuery) {
                 return this.bot.editMessage(ctx, message, keyboard);
             }
@@ -87,14 +91,13 @@ export class ScreenController implements IController {
                     action: `action.${EBotActions.SELECT_LANGUAGE}.${item.slug}`,
                 }));
 
-                const keyboard = generateKeyboard(ctx, formattedKeyboardData, backButton);
+                const keyboard = generateKeyboard(ctx, formattedKeyboardData, [backButton]);
                 await botAction(ctx, message, keyboard);
                 return;
             }
 
             case EScreen.WORD_DETAILS: {
                 const wordId = screenData as number;
-
                 const data = await this.bot.apiService.findWordById(wordId);
 
                 const message = TRANSLATION.wordDetails(
@@ -115,7 +118,7 @@ export class ScreenController implements IController {
                             action: `delete.word.${wordId}`,
                         },
                     ],
-                    backButton,
+                    [backButton],
                 );
 
                 await botAction(ctx, message[userLang], keyboard);
@@ -125,6 +128,12 @@ export class ScreenController implements IController {
             case EScreen.MAIN_MENU: {
                 const data = await this.bot.apiService.findByTgId(String(tgId));
 
+                await this.bot.stateService.setState(tgId, {
+                    pagination: {
+                        currentPage: 1,
+                        total: 0,
+                    },
+                });
                 const keyboard = getMenuButtons(userLang);
                 const lang = TRANSLATION[user.language!][userLang];
                 const message = TRANSLATION.mainMenu(data?.wordsCount || 0, lang);
@@ -133,8 +142,14 @@ export class ScreenController implements IController {
             }
 
             case EScreen.WORDS: {
+                const currentPage = user?.pagination?.currentPage || 1;
+
                 const data = await this.bot.apiService.findWords(
-                    String(tgId),
+                    {
+                        tgId: String(tgId),
+                        limit: LIMIT,
+                        offset: LIMIT * (currentPage - 1),
+                    },
                     // user?.language || undefined,
                 );
 
@@ -143,7 +158,16 @@ export class ScreenController implements IController {
                     action: `action.${EBotActions.WORD_DETAILS}.${item.id}`,
                 }));
 
-                const keyboard = generateKeyboard(ctx, formattedData, backButton);
+                const totalPages = Math.ceil(data.total / LIMIT);
+
+                const pagination = getPaginationButton({
+                    lang: userLang,
+                    total: totalPages,
+                    current: currentPage,
+                    prefix: EScreen.WORDS,
+                });
+
+                const keyboard = generateKeyboard(ctx, formattedData, [pagination, backButton]);
 
                 await botAction(ctx, TRANSLATION.wordsScreen(data.total)[userLang], keyboard);
                 return;
@@ -165,24 +189,88 @@ export class ScreenController implements IController {
             const splittedAction = action.split('.');
 
             switch (splittedAction[1] as EBotActions) {
+                // Кнопка назад
                 case EBotActions.BACK: {
                     const state = await this.bot.stateService.getState(tgId);
                     await this.open(ctx, state.prevScreen);
                     return;
                 }
 
+                // Заглушка
+                case EBotActions.EMPTY: {
+                    await ctx.answerCbQuery();
+                    return;
+                }
+
+                // Перейти к выбору языка
                 case EBotActions.GO_TO_SELECT_LANG: {
                     await this.open(ctx, EScreen.LANG_SELECT);
 
                     return;
                 }
 
+                // Пагинация - назад
+                case EBotActions.PREV: {
+                    const prefix = splittedAction.slice(2) || null;
+
+                    if (!prefix) return null;
+
+                    const user = await this.bot.stateService.getState(tgId);
+                    await this.bot.stateService.setState(tgId, {
+                        pagination: {
+                            currentPage: (user?.pagination?.currentPage || 1) - 1,
+                            total: user?.pagination.total,
+                        },
+                    });
+
+                    await this.open(ctx, prefix.join('.'), null, EScreenAction.EDIT);
+                    return;
+                }
+
+                // Пагинация - вперед
+                case EBotActions.NEXT: {
+                    const prefix = splittedAction.slice(2) || null;
+
+                    if (!prefix) return null;
+
+                    const user = await this.bot.stateService.getState(tgId);
+                    await this.bot.stateService.setState(tgId, {
+                        pagination: {
+                            currentPage: (user?.pagination?.currentPage || 1) + 1,
+                            total: user?.pagination.total,
+                        },
+                    });
+
+                    await this.open(ctx, prefix.join('.'), null, EScreenAction.EDIT);
+                    return;
+                }
+
+                // Создание слова
+                case EBotActions.CREATE_WORD: {
+                    await ctx.answerCbQuery();
+                    ctx.scene.enter('create-word');
+
+                    return;
+                }
+
+                // Все слова
                 case EBotActions.WORDS: {
                     await this.open(ctx, EScreen.WORDS);
 
                     return;
                 }
 
+                case EBotActions.WORD: {
+                    if (splittedAction[0] === EBaseActions.DELETE) {
+                        await this.bot.apiService.deleteWord(splittedAction[2] as number);
+                        await ctx.answerCbQuery('Слово удалено!');
+                        await this.open(ctx, EScreen.WORDS);
+                    }
+
+                    return;
+                }
+
+                // Детали слова
                 case EBotActions.WORD_DETAILS: {
                     const wordId = splittedAction[2];
                     await this.open(ctx, EScreen.WORD_DETAILS, wordId);
@@ -190,6 +278,7 @@ export class ScreenController implements IController {
                     return;
                 }
 
+                // Выбор языка
                 case EBotActions.SELECT_LANGUAGE: {
                     const prevState = await this.bot.stateService.getState(tgId);
                     const state = await this.bot.stateService.setState(tgId, {
@@ -225,8 +314,6 @@ export class ScreenController implements IController {
         this.onAction();
 
         this.bot.botInstance.use(async (ctx: Context, next) => {
-            console.log(ctx.message, 'MSG');
-
             await next();
         });
     }

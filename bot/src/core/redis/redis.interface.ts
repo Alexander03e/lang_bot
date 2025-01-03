@@ -14,4 +14,15 @@ export interface IState {
         isInlineKeyboard?: boolean;
     } | null;
     lang: EBotLang | null;
+    sceneData: unknown;
+    words: {
+        currentPage: number;
+        total: number;
+        displayMode: 'BUTTONS' | 'INLINE' | null;
+    };
+
+    pagination: {
+        total: number;
+        currentPage: number;
+    };
 }

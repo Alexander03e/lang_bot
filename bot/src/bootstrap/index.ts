@@ -10,8 +10,8 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const bootstrap = async () => {
-    const redisService = new RedisService();
-    const apiService = new ApiService();
+    const redisService = RedisService.getInstance();
+    const apiService = ApiService.getInstance();
     const messageService = new MessageService(redisService);
 
     const bot = new Bot(process.env.BOT_TOKEN as string, redisService, apiService, messageService);

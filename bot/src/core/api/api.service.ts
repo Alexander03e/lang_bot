@@ -3,6 +3,7 @@ import { AxiosInstance } from 'axios';
 import { axiosInstance } from '@app/core/api/axios';
 import { CreateUserDto } from '@app/shared/dto/create-user.dto';
 import { TUserById, TUserWords, TWord } from '@app/shared/types/api.types';
+import { CreateWordDto } from '@app/shared/dto/create-word.dto';
 
 export class ApiService {
     private static baseInstance: ApiService;
@@ -42,7 +43,17 @@ export class ApiService {
         }
     }
 
-    async findWords(tgId?: string, languageSlug?: string): Promise<TUserWords> {
+    async findWords({
+        tgId,
+        languageSlug,
+        limit,
+        offset,
+    }: {
+        tgId?: string;
+        languageSlug?: string;
+        limit?: number;
+        offset?: number;
+    }): Promise<TUserWords> {
         let url = `${ENTITIES.WORD}?`;
 
         if (tgId) {
@@ -52,10 +63,27 @@ export class ApiService {
             url += `&languageSlug=${languageSlug}`;
         }
 
+        if (offset) {
+            url += `&offset=${offset}`;
+        }
+
+        if (limit) {
+            url += `&limit=${limit}`;
+        }
+
         return (await this.httpInstance.get(url)).data;
     }
 
     async findWordById(id: number): Promise<TWord> {
         return (await this.httpInstance.get(`${ENTITIES.WORD}/${id}`)).data;
+    }
+
+    async createWord({ description = '', ...data }: CreateWordDto) {
+        return (await this.httpInstance.post(`${ENTITIES.WORD}/byUser`, { ...data, description }))
+            .data;
+    }
+
+    async deleteWord(id: number) {
+        return (await this.httpInstance.delete(`${ENTITIES.WORD}/${id}`)).data;
     }
 }

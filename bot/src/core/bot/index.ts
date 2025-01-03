@@ -33,12 +33,12 @@ export class Bot implements BotIntance {
         const screenController = new ScreenController(this);
         const commandController = new CommandController(this, stateService, screenController);
         const messageController = new MessageController(this);
-        const middlewareController = new BotMiddleware(this);
+        const middlewareController = new BotMiddleware(this, screenController);
 
         this.controllers = [
-            commandController,
-            screenController,
             middlewareController,
+            screenController,
+            commandController,
             messageController,
         ];
     }
@@ -51,8 +51,12 @@ export class Bot implements BotIntance {
         await this.messageService.sendMessage(...props);
     }
 
-    async launch() {
+    async launchControllers() {
         this.controllers.forEach(controller => controller.launch());
+    }
+
+    async launch() {
+        await this.launchControllers();
         await this.botInstance.launch();
     }
 }

@@ -1,6 +1,7 @@
 import {
     Body,
     Controller,
+    Delete,
     Get,
     Param,
     Post,
@@ -31,6 +32,11 @@ export class WordController {
         return await this.wordService.create(data);
     }
 
+    @Get(':id')
+    async findById(@Param('id') id: number) {
+        return await this.wordService.findById(id);
+    }
+
     @Get()
     async findAll(@Query() query: WordQueries) {
         return await this.wordService.findAll(query);
@@ -41,6 +47,9 @@ export class WordController {
         return await this.wordService.update(id, data);
     }
 
-    @Get(':lang')
-    async findByLanguage(@Param('lang') lang: string) {}
+    @Delete(':id')
+    async delete(@Param('id') id: number) {
+        console.log(id);
+        return await this.wordService.delete(id);
+    }
 }

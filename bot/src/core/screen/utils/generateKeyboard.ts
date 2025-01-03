@@ -7,8 +7,9 @@ type Props = {
 
 export const generateKeyboard = (ctx: Context, items: Props[], otherButtons?: any[]) => {
     const buttons = items.map(item => [Markup.button.callback(item.label, item.action)]);
+
     if (otherButtons && ctx?.callbackQuery) {
-        buttons.push(otherButtons);
+        otherButtons.forEach(group => buttons.push(group));
     }
 
     return Markup.inlineKeyboard([...buttons]);

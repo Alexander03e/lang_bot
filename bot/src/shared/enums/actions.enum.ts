@@ -13,4 +13,25 @@ export enum EBotActions {
     DIALOGUE = 'dialogue',
     // Перейти к выбору языка
     GO_TO_SELECT_LANG = 'go_to_select_lang',
+    // Пропустить шаг
+    SKIP = 'skip',
+    // Предыдущая страница
+    PREV = 'prev',
+    // Следующая страница
+    NEXT = 'next',
+    // Заглушка
+    EMPTY = 'empty',
+    // Действие со словом
+    WORD = 'word',
+}
+
+export enum ESceneStatus {
+    FINISH,
+    IN_PROGRESS,
+}
+
+export enum EBaseActions {
+    ACTION = 'action',
+    DELETE = 'delete',
+    EDIT = 'edit',
 }
