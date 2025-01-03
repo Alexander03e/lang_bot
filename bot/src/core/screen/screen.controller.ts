@@ -15,23 +15,35 @@ import { TRANSLATION } from '@app/shared/translation';
 export class ScreenController implements IController {
     constructor(private readonly bot: Bot) {}
 
-    async updateScreen() {}
-
     async changeScreenState(ctx: Context, tgId: number, screen: EScreen) {
         const state = await this.bot.stateService.getState(tgId);
 
+        const prevScreen = () => {
+            if (!ctx.callbackQuery) return null;
+            if (screen === state.currentScreen) {
+                return state.prevScreen;
+            }
+
+            const splittedScreen = screen.split('.');
+            const prev = splittedScreen.slice(0, -1).join('.');
+
+            if (splittedScreen.length > 1) {
+                return prev as EScreen;
+            }
+            // TODO: Доработать навигацию
+            return state.currentScreen;
+        };
+
+        const prev = prevScreen();
+
         await this.bot.stateService.setState(tgId, {
-            prevScreen: ctx.callbackQuery
-                ? screen === state.currentScreen
-                    ? state.prevScreen
-                    : state.currentScreen
-                : null,
+            prevScreen: prev,
             currentScreen: screen,
             openScreen: null,
         });
     }
 
-    async open(ctx: Context, screen: EScreen | null, action?: EScreenAction) {
+    async open(ctx: Context, screen: EScreen | null, screenData?: unknown, action?: EScreenAction) {
         if (!screen) return;
         const user = await this.bot.stateService.getState(ctx?.chat?.id!);
 
@@ -77,6 +89,36 @@ export class ScreenController implements IController {
 
                 const keyboard = generateKeyboard(ctx, formattedKeyboardData, backButton);
                 await botAction(ctx, message, keyboard);
+                return;
+            }
+
+            case EScreen.WORD_DETAILS: {
+                const wordId = screenData as number;
+
+                const data = await this.bot.apiService.findWordById(wordId);
+
+                const message = TRANSLATION.wordDetails(
+                    data.word,
+                    data.translation,
+                    data?.description || '',
+                );
+
+                const keyboard = generateKeyboard(
+                    ctx,
+                    [
+                        {
+                            label: TRANSLATION.edit[userLang],
+                            action: `edit.word.${wordId},`,
+                        },
+                        {
+                            label: TRANSLATION.delete[userLang],
+                            action: `delete.word.${wordId}`,
+                        },
+                    ],
+                    backButton,
+                );
+
+                await botAction(ctx, message[userLang], keyboard);
                 return;
             }
 
@@ -137,6 +179,13 @@ export class ScreenController implements IController {
 
                 case EBotActions.WORDS: {
                     await this.open(ctx, EScreen.WORDS);
+
+                    return;
+                }
+
+                case EBotActions.WORD_DETAILS: {
+                    const wordId = splittedAction[2];
+                    await this.open(ctx, EScreen.WORD_DETAILS, wordId);
 
                     return;
                 }

@@ -40,9 +40,24 @@ export const TRANSLATION = {
         en: `My dictionary \n\nTo open a word, click on it \n\nTotal words: ${count}`,
     }),
 
+    wordDetails: (word: string, translation: string, desc: string) => ({
+        ru: `Слово: ${word} \n\nПеревод: ${translation} \n\nОписание: ${desc}`,
+        en: `Word: ${word} \n\nTranslation: ${translation} \n\nDescription: ${desc}`,
+    }),
+
     dialog: {
         ru: '🤖 Диалог с ИИ',
         en: '🤖 AI dialogue',
+    },
+
+    delete: {
+        ru: '❌ Удалить',
+        en: '❌ Delete',
+    },
+
+    edit: {
+        ru: '✏️ Изменить',
+        en: '✏️ Edit',
     },
 
     changeLang: {

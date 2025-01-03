@@ -2,7 +2,7 @@ import { ENTITIES } from '@app/shared/enums/api.enum';
 import { AxiosInstance } from 'axios';
 import { axiosInstance } from '@app/core/api/axios';
 import { CreateUserDto } from '@app/shared/dto/create-user.dto';
-import { TUserById, TUserWords } from '@app/shared/types/api.types';
+import { TUserById, TUserWords, TWord } from '@app/shared/types/api.types';
 
 export class ApiService {
     private static baseInstance: ApiService;
@@ -53,5 +53,9 @@ export class ApiService {
         }
 
         return (await this.httpInstance.get(url)).data;
+    }
+
+    async findWordById(id: number): Promise<TWord> {
+        return (await this.httpInstance.get(`${ENTITIES.WORD}/${id}`)).data;
     }
 }
