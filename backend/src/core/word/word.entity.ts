@@ -1,9 +1,10 @@
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { LanguageEntity } from '../language/language.entity';
 import { AbstractEntity } from '../database/abstract.entity';
+import { UserEntity } from '../user/user.entity';
 
 @Entity({ name: 'words' })
-export class WordEntity extends AbstractEntity<WordEntity> {
+export class WordEntity {
     @PrimaryGeneratedColumn()
     id: number;
 
@@ -19,9 +20,13 @@ export class WordEntity extends AbstractEntity<WordEntity> {
 
     @Column({
         comment: 'Описание',
+        default: '',
     })
     description: string;
 
-    @ManyToOne(() => LanguageEntity, language => language.word)
+    @ManyToOne(() => LanguageEntity)
     language: LanguageEntity;
+
+    @ManyToOne(() => UserEntity, user => user.words)
+    user: UserEntity;
 }

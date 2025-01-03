@@ -30,6 +30,16 @@ export const TRANSLATION = {
         en: '📝 My dictionary',
     },
 
+    createWord: {
+        ru: '✏️ Записать слово',
+        en: '✏️ Write word',
+    },
+
+    wordsScreen: (count: number) => ({
+        ru: `Мой словарь \n\nЧтобы посмотреть слово, нажмите на него \n\nВсего слов: ${count}`,
+        en: `My dictionary \n\nTo open a word, click on it \n\nTotal words: ${count}`,
+    }),
+
     dialog: {
         ru: '🤖 Диалог с ИИ',
         en: '🤖 AI dialogue',

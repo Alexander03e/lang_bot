@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import { Body, Controller, Get, Post, UsePipes, ValidationPipe } from '@nestjs/common';
 import { LanguageService } from './language.service';
 import { CreateLangDto } from './dto/create-lang.dto';
 
@@ -7,6 +7,7 @@ export class LanguageController {
     constructor(private readonly languageService: LanguageService) {}
 
     @Post()
+    @UsePipes(new ValidationPipe())
     async create(@Body() data: CreateLangDto) {
         return await this.languageService.create(data);
     }

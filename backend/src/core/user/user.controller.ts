@@ -6,8 +6,18 @@ import { UserService } from './user.service';
 export class UserController {
     constructor(private readonly userService: UserService) {}
 
+    @Get(':id/:lang')
+    async findUserLanguages(@Param('id') tgId: string, @Param('lang') langSlug: string) {
+        return await this.userService.findUserLanguages(tgId, langSlug);
+    }
+
+    @Get(':id/words')
+    async findAllWords() {
+        return await this.userService.findAllWords();
+    }
+
     @Get(':id')
-    async findByTgId(@Param('id') id: number) {
+    async findByTgId(@Param('id') id: string) {
         return await this.userService.findByTgId(id);
     }
 

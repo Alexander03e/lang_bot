@@ -3,21 +3,51 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from './user.entity';
 import { CreateUserDto } from './dto/create-user.dto';
+import { LanguageEntity } from '../language/language.entity';
+import { WordEntity } from '../word/word.entity';
+import { UserByIdResponse } from './types/user-by-id-response.interface';
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectRepository(UserEntity)
         private readonly userRepository: Repository<UserEntity>,
+        @InjectRepository(LanguageEntity)
+        private readonly languageRepository: Repository<LanguageEntity>,
+        @InjectRepository(WordEntity)
+        private readonly wordRepository: Repository<WordEntity>,
     ) {}
 
-    async findByTgId(tgId: number): Promise<UserEntity> {
-        const user = await this.userRepository.findOne({ where: { tgId } });
+    async findAllWords(): Promise<WordEntity[]> {
+        return await this.wordRepository.find();
+    }
+
+    async findByTgId(tgId: string): Promise<UserByIdResponse> {
+        const user = await this.userRepository.findOne({
+            where: { tgId },
+        });
+
         if (!user) {
             throw new NotFoundException('Пользователь не найден');
         }
 
-        return user;
+        const wordsCount = await this.wordRepository.count({
+            where: {
+                user: {
+                    id: user.id,
+                },
+            },
+        });
+
+        return { ...user, wordsCount };
+    }
+
+    async findUserLanguages(tgId: string, langSlug: string): Promise<LanguageEntity> {
+        return await this.languageRepository.findOne({
+            where: {
+                slug: langSlug,
+            },
+        });
     }
 
     async findAll() {

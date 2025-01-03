@@ -9,16 +9,23 @@ import { LANG_LABELS } from '@app/shared/consts/language';
 import { ELangueage } from '@app/shared/enums/entities.enum';
 import { SCREEN_TEXTS } from '@app/shared/consts/screens';
 import { EBotActions } from '@app/shared/enums/actions.enum';
-import { getMenuButtons } from '@app/shared/keyboards';
+import { getBackButton, getMenuButtons } from '@app/shared/keyboards';
 import { TRANSLATION } from '@app/shared/translation';
 
 export class ScreenController implements IController {
     constructor(private readonly bot: Bot) {}
 
-    async changeScreen(tgId: number, screen: EScreen) {
+    async updateScreen() {}
+
+    async changeScreenState(ctx: Context, tgId: number, screen: EScreen) {
         const state = await this.bot.stateService.getState(tgId);
+
         await this.bot.stateService.setState(tgId, {
-            prevScreen: screen === state.currentScreen ? state.prevScreen : state.currentScreen,
+            prevScreen: ctx.callbackQuery
+                ? screen === state.currentScreen
+                    ? state.prevScreen
+                    : state.currentScreen
+                : null,
             currentScreen: screen,
             openScreen: null,
         });
@@ -40,7 +47,9 @@ export class ScreenController implements IController {
 
         const tgId = ctx?.chat?.id!;
 
-        await this.changeScreen(tgId, screen);
+        const backButton = getBackButton(userLang);
+
+        await this.changeScreenState(ctx, tgId, screen);
 
         switch (screen) {
             case EScreen.START_MENU: {
@@ -51,7 +60,7 @@ export class ScreenController implements IController {
                 }));
 
                 const message = SCREEN_TEXTS[screen][userLang];
-                const keyboard = generateKeyboard(formattedKeyboardData);
+                const keyboard = generateKeyboard(ctx, formattedKeyboardData);
 
                 await botAction(ctx, message, keyboard);
                 return;
@@ -66,21 +75,35 @@ export class ScreenController implements IController {
                     action: `action.${EBotActions.SELECT_LANGUAGE}.${item.slug}`,
                 }));
 
-                const keyboard = generateKeyboard(formattedKeyboardData);
+                const keyboard = generateKeyboard(ctx, formattedKeyboardData, backButton);
                 await botAction(ctx, message, keyboard);
                 return;
             }
 
             case EScreen.MAIN_MENU: {
+                const data = await this.bot.apiService.findByTgId(String(tgId));
+
                 const keyboard = getMenuButtons(userLang);
                 const lang = TRANSLATION[user.language!][userLang];
-                const message = TRANSLATION.mainMenu(0, lang);
+                const message = TRANSLATION.mainMenu(data?.wordsCount || 0, lang);
                 await botAction(ctx, message[userLang], keyboard);
                 return;
             }
 
             case EScreen.WORDS: {
-                await botAction(ctx, 'words');
+                const data = await this.bot.apiService.findWords(
+                    String(tgId),
+                    // user?.language || undefined,
+                );
+
+                const formattedData = data.words?.map(item => ({
+                    label: `${item.word} - ${item.translation}`,
+                    action: `action.${EBotActions.WORD_DETAILS}.${item.id}`,
+                }));
+
+                const keyboard = generateKeyboard(ctx, formattedData, backButton);
+
+                await botAction(ctx, TRANSLATION.wordsScreen(data.total)[userLang], keyboard);
                 return;
             }
 
@@ -105,19 +128,35 @@ export class ScreenController implements IController {
                     await this.open(ctx, state.prevScreen);
                     return;
                 }
+
                 case EBotActions.GO_TO_SELECT_LANG: {
                     await this.open(ctx, EScreen.LANG_SELECT);
 
                     return;
                 }
 
+                case EBotActions.WORDS: {
+                    await this.open(ctx, EScreen.WORDS);
+
+                    return;
+                }
+
                 case EBotActions.SELECT_LANGUAGE: {
+                    const prevState = await this.bot.stateService.getState(tgId);
                     const state = await this.bot.stateService.setState(tgId, {
                         language: splittedAction[2],
                     });
-                    await ctx.answerCbQuery();
-                    // await this.open(ctx, state.currentScreen as EScreen);
 
+                    if (!state.prevScreen) {
+                        await this.open(ctx, EScreen.MAIN_MENU);
+                        return;
+                    }
+
+                    if (splittedAction[2] !== prevState.language) {
+                        await this.open(ctx, EScreen.LANG_SELECT);
+                    }
+
+                    await ctx.answerCbQuery();
                     return;
                 }
             }

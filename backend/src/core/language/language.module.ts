@@ -3,15 +3,9 @@ import { LanguageService } from './language.service';
 import { LanguageController } from './language.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { LanguageEntity } from './language.entity';
-import { UserEntity } from '../user/user.entity';
-import { WordEntity } from '../word/word.entity';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([LanguageEntity]),
-        TypeOrmModule.forFeature([UserEntity]),
-        TypeOrmModule.forFeature([WordEntity]),
-    ],
+    imports: [TypeOrmModule.forFeature([LanguageEntity])],
     controllers: [LanguageController],
     providers: [LanguageService],
 })

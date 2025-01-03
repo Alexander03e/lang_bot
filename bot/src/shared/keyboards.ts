@@ -16,12 +16,13 @@ export const LangCommandKeyboard: Markup.Markup<any> = Markup.inlineKeyboard([
 ]);
 
 export const getBackButton = (lang: EBotLang) => [
-    Markup.button.callback(TRANSLATION.backButton[lang], EBotActions.BACK),
+    Markup.button.callback(TRANSLATION.backButton[lang], `action.${EBotActions.BACK}`),
 ];
 
 export const getMenuButtons = (lang: EBotLang) =>
     Markup.inlineKeyboard([
         [Markup.button.callback(TRANSLATION.words[lang], `action.${EBotActions.WORDS}`)],
+        [Markup.button.callback(TRANSLATION.createWord[lang], `action.${EBotActions.CREATE_WORD}`)],
         [Markup.button.callback(TRANSLATION.dialog[lang], `action.${EBotActions.DIALOGUE}`)],
         [
             Markup.button.callback(

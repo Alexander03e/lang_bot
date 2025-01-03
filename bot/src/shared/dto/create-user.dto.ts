@@ -1,5 +1,5 @@
 export interface CreateUserDto {
     username: string;
-    tgId: number;
+    tgId: string;
     first_name: string | null;
 }

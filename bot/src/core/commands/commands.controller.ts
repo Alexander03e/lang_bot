@@ -21,11 +21,11 @@ export class CommandController implements IController {
 
             if (!tgId) return;
 
-            const findUser = await this.bot.apiService.findByTgId(tgId);
+            const findUser = await this.bot.apiService.findByTgId(String(tgId));
 
             if (!findUser) {
                 await this.bot.apiService.createUser({
-                    tgId: +ctx.from.id,
+                    tgId: String(ctx.from.id),
                     username: ctx.from?.username || DATA.HIDDEN,
                     first_name: ctx.from.first_name || null,
                 });
