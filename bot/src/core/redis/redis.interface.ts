@@ -15,9 +15,9 @@ export interface IState {
     } | null;
     lang: EBotLang | null;
     sceneData: unknown;
+
     words: {
-        currentPage: number;
-        total: number;
+        translates: boolean;
         displayMode: 'BUTTONS' | 'INLINE' | null;
     };
 

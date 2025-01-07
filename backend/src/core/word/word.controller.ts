@@ -49,7 +49,6 @@ export class WordController {
 
     @Delete(':id')
     async delete(@Param('id') id: number) {
-        console.log(id);
         return await this.wordService.delete(id);
     }
 }

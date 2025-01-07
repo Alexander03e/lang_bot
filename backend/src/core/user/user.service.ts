@@ -22,7 +22,7 @@ export class UserService {
         return await this.wordRepository.find();
     }
 
-    async findByTgId(tgId: string): Promise<UserByIdResponse> {
+    async findByTgId(tgId: string, languageSlug?: string): Promise<UserByIdResponse> {
         const user = await this.userRepository.findOne({
             where: { tgId },
         });
@@ -36,6 +36,7 @@ export class UserService {
                 user: {
                     id: user.id,
                 },
+                ...(languageSlug ? { language: { slug: languageSlug } } : {}),
             },
         });
 

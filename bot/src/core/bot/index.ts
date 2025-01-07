@@ -9,6 +9,7 @@ import { ScreenController } from '@app/core/screen/screen.controller';
 import { MessageService } from '@app/core/message/message.service';
 import { MessageController } from '@app/core/message/message.controller';
 import { IState } from '@app/core/redis/redis.interface';
+import { AiService } from '@app/core/ai/ai.service';
 
 export class Bot implements BotIntance {
     readonly botInstance: Telegraf<any>;
@@ -16,6 +17,7 @@ export class Bot implements BotIntance {
     readonly stateService: StateService<IState>;
     readonly messageService: MessageService;
     readonly apiService: ApiService;
+    readonly aiService: AiService;
 
     private controllers: IController[] = [];
 
@@ -24,10 +26,12 @@ export class Bot implements BotIntance {
         stateService: StateService<IState>,
         apiService: ApiService,
         messageService: MessageService,
+        aiService: AiService,
     ) {
         this.stateService = stateService;
         this.apiService = apiService;
         this.messageService = messageService;
+        this.aiService = aiService;
         this.botInstance = new Telegraf(token);
 
         const screenController = new ScreenController(this);

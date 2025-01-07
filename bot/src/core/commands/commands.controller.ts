@@ -21,7 +21,7 @@ export class CommandController implements IController {
 
             if (!tgId) return;
 
-            const findUser = await this.bot.apiService.findByTgId(String(tgId));
+            const findUser = await this.bot.apiService.findByTgId({tgId});
 
             if (!findUser) {
                 await this.bot.apiService.createUser({
@@ -47,6 +47,12 @@ export class CommandController implements IController {
 
     launch() {
         this.onStart();
+        this.bot.botInstance.command('ai', async ctx => {
+            ctx.sendChatAction('typing');
+            const text = await this.bot.aiService.ask(ctx?.payload || '');
+
+            await ctx.reply(text.message);
+        });
 
         Object.entries(COMMANDS).map(([screen, command]) => {
             this.bot.botInstance.command(command, async (ctx: Context, next) => {

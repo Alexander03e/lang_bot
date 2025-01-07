@@ -70,7 +70,7 @@ export const getPaginationButton = ({
         buttons.push(emptyButton);
     }
 
-    if (total === 1) {
+    if (total === 1 || total === 0) {
         buttons = [];
     }
 

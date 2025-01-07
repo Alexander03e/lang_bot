@@ -126,7 +126,7 @@ export class ScreenController implements IController {
             }
 
             case EScreen.MAIN_MENU: {
-                const data = await this.bot.apiService.findByTgId(String(tgId));
+                const data = await this.bot.apiService.findByTgId({tgId, languageSlug: user?.language || undefined});
 
                 await this.bot.stateService.setState(tgId, {
                     pagination: {
@@ -149,8 +149,8 @@ export class ScreenController implements IController {
                         tgId: String(tgId),
                         limit: LIMIT,
                         offset: LIMIT * (currentPage - 1),
+                        languageSlug: user?.language || undefined,
                     },
-                    // user?.language || undefined,
                 );
 
                 const formattedData = data.words?.map(item => ({
@@ -260,6 +260,7 @@ export class ScreenController implements IController {
                     return;
                 }
 
+                // Действия для выбранного слова
                 case EBotActions.WORD: {
                     if (splittedAction[0] === EBaseActions.DELETE) {
                         await this.bot.apiService.deleteWord(splittedAction[2] as number);

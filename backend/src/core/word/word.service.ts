@@ -59,8 +59,8 @@ export class WordService {
         const queryBuilder = dataSource
             .getRepository(WordEntity)
             .createQueryBuilder('words')
-            .leftJoin('words.user', 'user');
-
+            .leftJoin('words.user', 'user')
+            .leftJoinAndSelect('words.language', 'language'); // Подключаем язык для получения его данных
         if (query?.tgId) {
             const user = await this.userRepository.findOne({
                 where: {
@@ -74,14 +74,8 @@ export class WordService {
         }
 
         if (query?.languageSlug) {
-            const language = await this.languageRepository.findOne({
-                where: {
-                    slug: query.languageSlug,
-                },
-            });
-
-            queryBuilder.andWhere('words.languageId = :id', {
-                id: language.id,
+            queryBuilder.andWhere('language.slug = :slug', {
+                slug: query.languageSlug,
             });
         }
 

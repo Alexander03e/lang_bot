@@ -14,8 +14,7 @@ const initState: IState = {
     sceneData: null,
 
     words: {
-        total: 0,
-        currentPage: 1,
+        translates: true,
         displayMode: 'BUTTONS',
     },
 

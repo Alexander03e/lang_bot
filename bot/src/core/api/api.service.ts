@@ -34,9 +34,15 @@ export class ApiService {
         return (await this.httpInstance.post(ENTITIES.USER, dto)).data;
     }
 
-    async findByTgId(tgId: string): Promise<TUserById | null> {
+    async findByTgId({tgId, languageSlug}: {tgId: number, languageSlug?: string}): Promise<TUserById | null> {
+        let url = `${ENTITIES.USER}/${tgId}`
+
+        if (languageSlug) {
+            url += `?languageSlug=${languageSlug}`
+        }
+
         try {
-            return (await this.httpInstance.get(`${ENTITIES.USER}/${tgId}`)).data;
+            return (await this.httpInstance.get(url)).data;
         } catch (e) {
             console.log(e);
             return null;

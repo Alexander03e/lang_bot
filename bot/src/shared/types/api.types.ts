@@ -22,3 +22,5 @@ export type TUserWords = {
     words: TWord[];
     total: number;
 };
+
+
